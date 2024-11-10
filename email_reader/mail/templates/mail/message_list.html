@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<style>
+    #progress {
+        width: 100%;
+        background-color: #f3f3f3;
+    }
+
+    #progress-bar {
+        width: 0;
+        height: 30px;
+        background-color: #4caf50;
+        text-align: center;
+        line-height: 30px;
+        color: white;
+    }
+</style>
+</head>
+<body>
+    <h1>Messages</h1>
+    <div id="progress">
+        <div id="progress-bar">0%</div>
+    </div>
+    <ul id="messages">
+        {% for message in messages %}
+            <li>{{ message.subject }}</li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        $(document).ready(function() {
+            const socket = new WebSocket('ws://localhost:8000/ws/mail/');
+
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                $('#messages').append('<li>' + data.message + '</li>');
+                updateProgressBar();
+            };
+
+            function updateProgressBar() {
+                let progressBar = $('#progress-bar');
+                let width = parseInt(progressBar.css('width'));
+                let parentWidth = progressBar.parent().width();
+                let newWidth = Math.min(width + 10, parentWidth);
+                progressBar.css('width', newWidth + 'px').text(Math.round((newWidth / parentWidth) * 100) + '%');
+            }
+        });
+    </script>
+</body>
+</html>
